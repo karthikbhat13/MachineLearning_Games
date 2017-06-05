@@ -345,7 +345,7 @@ class Critic:
                 if i+2 >= len(history):
                     if(self.checker.getWinner(history[len(history)-1]) == 0):
                         trainingExamples.append([self.checker.getFeatures(history[i]), 0])
-                    elif(self.checker.getWinner(history[len(history)-1]) == self.mode):
+                    elif(self.checker.getWinner(history[len(history)-1])==self.mode):
                         trainingExamples.append([self.checker.getFeatures(history[i]), 100])
                     else:
                         trainingExamples.append([self.checker.getFeatures(history[i]), -100])
