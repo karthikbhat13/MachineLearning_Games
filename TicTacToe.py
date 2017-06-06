@@ -4,6 +4,7 @@
 # 2 represents an O
 import copy
 import random
+import pickle
 
 class ExperimentGenerator:
     
@@ -352,110 +353,138 @@ class Critic:
 
         return trainingExamples
 
-choice = int(input("enter the chioce"))
-file = open('record.txt','w')
 
 
-if choice == 1:  
-    data = []
-    data = file.readlines()
-    num = len(data)
-    if(num == 0):
-        file.write(str(list(.5,.5,.5,.5,.5,.5,.5)))
-    board = ExperimentGenerator()
-    hypothesis1 = set(data[len-1])
-    hypothesis2 = (.5,.5,.5,.5,.5,.5,.5)
-    player1 = PerformanceSystem(board,hypothesis1,1)
-    player2 = PerformanceSystem(board,hypothesis2,2)
-    player2.setUpdateConstant(.4)
-    critic1 = Critic(hypothesis1,1)
-    critic2 = Critic(hypothesis2,2)
+def saveData(filename,obj):
+    with open(filename,'a+b') as fp:
+        pickle.dump(obj,fp)
 
-    xwins = 0
-    owins = 0
-    draws = 0
-
-    for i in range(0,10000):
-        board = ExperimentGenerator()
-        player1.setBoard(board)
-        player2.setBoard(board)
-
-        while(not board.isDone()):
-            #player1.chooseRandom()
-            player1.chooseMove()
-            if board.isDone():
-                break
-            #player2.chooseMove()
-            player2.chooseRandom()
-        board.printBoard()
-
-        winner = board.getWinner()
-            
-        if(winner == 1):
-            print "X wins"
-            xwins += 1
-        elif(winner == 2):
-            print "O wins"
-            owins += 1
-        elif(winner == 0):
-            print "game is a draw"
-            draws += 1
-
-        critic1.setHypothesis(player1.getHypothesis())
-        critic2.setHypothesis(player2.getHypothesis())
-
-        player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
-        player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
-
-    print "X won " + str(xwins) + " games."
-    print "O won " + str(owins) + " games."
-    print "There were " + str(draws) + " draws."
-    file.write(list(hypothesis1))
-
-while True:
-    board = ExperimentGenerator()
-    player1.setBoard(board)
-    player2.setBoard(board)
+def getData(filename):
+    l =[]
+    with open(filename,'rb') as fp:
+        while not EOFError:
+                temp = pickle.load(fp)
+                print(temp)
+    return l
     
-    while(not board.isDone()):
-        #board.printBoard()
-        #xval = input("Enter xcoordinate: ")
-        #yval = input("Enter ycoordinate: ")
-        #board.setX(xval,yval)
-
-        #player1.chooseRandom()
-        player1.chooseMove()
-        if board.isDone():
-            break
-
-        board.printBoard()
-        xval = input("Enter xcoordinate: ")
-        yval = input("Enter ycoordinate: ")
-        board.setO(xval,yval)
 
 
-        #player2.chooseMove()
-        #player2.chooseRandom()
-    board.printBoard()
 
-    winner = board.getWinner()
+choice = 0
+
+while(choice <= 2):
+    choice = int(input("enter the chioce"))
+    filename = 'record.txt'
+    
+    if choice == 1:  
+        data = []
         
-    if(winner == 1):
-        print "X wins"
-        xwins += 1
-    elif(winner == 2):
-        print "O wins"
-        owins += 1
-    elif(winner == 0):
-        print "game is a draw"
-        draws += 1
-
-    critic1.setHypothesis(player1.getHypothesis())
-    critic2.setHypothesis(player2.getHypothesis())
-
-    player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
-    player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
+        num = len(data)
+        board = ExperimentGenerator()
+        hypothesis1 = (.5,.5,.5,.5,.5,.5,.5)
+        hypothesis2 = (.5,.5,.5,.5,.5,.5,.5)
+        player1 = PerformanceSystem(board,hypothesis1,1)
+        player2 = PerformanceSystem(board,hypothesis2,2)
+        player2.setUpdateConstant(.4)
+        critic1 = Critic(hypothesis1,1)
+        critic2 = Critic(hypothesis2,2)
 
 
-    print player1.getHypothesis()
-    print player2.getHypothesis()
+
+        if(num == 0):
+            saveData(filename,hypothesis1)
+        #data = getData(filename)
+
+
+        
+        xwins = 0
+        owins = 0
+        draws = 0
+
+        for i in range(0,10000):
+            board = ExperimentGenerator()
+            player1.setBoard(board)
+            player2.setBoard(board)
+
+            while(not board.isDone()):
+                #player1.chooseRandom()
+                player1.chooseMove()
+                if board.isDone():
+                    break
+                #player2.chooseMove()
+                player2.chooseRandom()
+        # board.printBoard()
+
+            winner = board.getWinner()
+                
+            if(winner == 1):
+                #print "X wins"
+                xwins += 1
+            elif(winner == 2):
+                #print "O wins"
+                owins += 1
+            elif(winner == 0):
+            # print "game is a draw"
+                draws += 1
+
+            critic1.setHypothesis(player1.getHypothesis())
+            critic2.setHypothesis(player2.getHypothesis())
+
+            player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
+            player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
+
+        print "X won " + str(xwins) + " games."
+        print "O won " + str(owins) + " games."
+        print "There were " + str(draws) + " draws."
+        saveData(filename,player1.getHypothesis())
+        print(getData(filename))
+
+
+    elif(choice == 2):
+            while True:
+                board = ExperimentGenerator()
+                player1.setBoard(board)
+                player2.setBoard(board)
+
+                while(not board.isDone()):
+                    #board.printBoard()
+                    #xval = input("Enter xcoordinate: ")
+                    #yval = input("Enter ycoordinate: ")
+                    #board.setX(xval,yval)
+
+                    #player1.chooseRandom()
+                    player1.chooseMove()
+                    if board.isDone():
+                        break
+
+                    board.printBoard()
+                    xval = input("Enter xcoordinate: ")
+                    yval = input("Enter ycoordinate: ")
+                    board.setO(xval,yval)
+
+
+                    #player2.chooseMove()
+                    #player2.chooseRandom()
+                board.printBoard()
+
+                winner = board.getWinner()
+                    
+                if(winner == 1):
+                    print "X wins"
+                    xwins += 1
+                elif(winner == 2):
+                    print "O wins"
+                    owins += 1
+                elif(winner == 0):
+                    print "game is a draw"
+                    draws += 1
+
+                critic1.setHypothesis(player1.getHypothesis())
+                critic2.setHypothesis(player2.getHypothesis())
+
+                player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
+                player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
+
+
+                print player1.getHypothesis()
+                print player2.getHypothesis()
