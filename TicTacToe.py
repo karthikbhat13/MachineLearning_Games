@@ -356,44 +356,48 @@ class Critic:
 
 
 def saveData(filename,obj):
-    with open(filename,'a+b') as fp:
-        pickle.dump(obj,fp)
+    with open(filename,'a') as fp:
+        temp = list(obj)
+        temp = [str(i) for i in temp]
+        fp.write(' '.join(temp))
+        fp.write('\n')
 
 def getData(filename):
     l =[]
-    with open(filename,'rb') as fp:
-        while not EOFError:
-                temp = pickle.load(fp)
-                print(temp)
-    return l
+    k =[]
+    with open(filename,'r') as fp:
+        l = fp.readlines()
+        for i in l:
+            i = i.strip('\n')
+            temp = i.split(' ')
+            k.append(temp)
+    return k
+
+def getHypo(lyst,num):
+    temp = lyst[num]
+    l = [float(i) for i in temp]
+
+    return tuple(l)
     
 
-
-
+filename = 'record.txt'   
 choice = 0
-
+saveData(filename,(.5,.5,.5,.5,.5,.5,.5))
 while(choice <= 2):
     choice = int(input("enter the chioce"))
-    filename = 'record.txt'
     
+    data = getData(filename)
     if choice == 1:  
-        data = []
-        
         num = len(data)
         board = ExperimentGenerator()
-        hypothesis1 = (.5,.5,.5,.5,.5,.5,.5)
+        hypothesis1 = getHypo(data,num-1)
+        print(getHypo(data,num-1))
         hypothesis2 = (.5,.5,.5,.5,.5,.5,.5)
         player1 = PerformanceSystem(board,hypothesis1,1)
         player2 = PerformanceSystem(board,hypothesis2,2)
         player2.setUpdateConstant(.4)
         critic1 = Critic(hypothesis1,1)
         critic2 = Critic(hypothesis2,2)
-
-
-
-        if(num == 0):
-            saveData(filename,hypothesis1)
-        #data = getData(filename)
 
 
         
