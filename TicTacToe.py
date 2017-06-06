@@ -385,30 +385,29 @@ choice = 0
 saveData(filename,(.5,.5,.5,.5,.5,.5,.5))
 while(choice <= 2):
     choice = int(input("enter the chioce"))
-    
+    board = ExperimentGenerator()
+    player1.setBoard(board)
+    player2.setBoard(board)
     data = getData(filename)
+    num = len(data)    
+    hypothesis1 = getHypo(data,num-1)
+    print(getHypo(data,num-1))
+    hypothesis2 = getHypo(data,0)
+    player1 = PerformanceSystem(board,hypothesis1,1)
+    player2 = PerformanceSystem(board,hypothesis2,2)
+    player2.setUpdateConstant(.4)
+    critic1 = Critic(hypothesis1,1)
+    critic2 = Critic(hypothesis2,2)
+
     if choice == 1:  
-        num = len(data)
-        board = ExperimentGenerator()
-        hypothesis1 = getHypo(data,num-1)
-        print(getHypo(data,num-1))
-        hypothesis2 = (.5,.5,.5,.5,.5,.5,.5)
-        player1 = PerformanceSystem(board,hypothesis1,1)
-        player2 = PerformanceSystem(board,hypothesis2,2)
-        player2.setUpdateConstant(.4)
-        critic1 = Critic(hypothesis1,1)
-        critic2 = Critic(hypothesis2,2)
 
 
-        
         xwins = 0
         owins = 0
         draws = 0
 
         for i in range(0,10000):
-            board = ExperimentGenerator()
-            player1.setBoard(board)
-            player2.setBoard(board)
+            
 
             while(not board.isDone()):
                 #player1.chooseRandom()
@@ -441,14 +440,11 @@ while(choice <= 2):
         print "O won " + str(owins) + " games."
         print "There were " + str(draws) + " draws."
         saveData(filename,player1.getHypothesis())
-        print(getData(filename))
+        print(getHypo(data,num-1))
 
 
     elif(choice == 2):
             while True:
-                board = ExperimentGenerator()
-                player1.setBoard(board)
-                player2.setBoard(board)
 
                 while(not board.isDone()):
                     #board.printBoard()
@@ -490,5 +486,7 @@ while(choice <= 2):
                 player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
 
 
-                print player1.getHypothesis()
-                print player2.getHypothesis()
+                saveData(filename,player1.getHypothesis())
+                print(getHypo(data,num-1))
+                
+                
