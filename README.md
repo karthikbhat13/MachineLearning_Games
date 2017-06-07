@@ -1,3 +1,3 @@
 # MachineLearning_Games
 
-Tacos are the best,what do you say Strawberry? 
+1. TicTacToe - Intial stages. A linear Function , Six Features , Gradient Descent(linear regression).
