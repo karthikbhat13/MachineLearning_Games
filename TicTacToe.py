@@ -391,7 +391,8 @@ if not getData(filename):
 
 while(choice <= 2):
     choice = int(input("enter the chioce"))
-   
+    data = getData(filename)
+    num = len(data)  
 
     if choice == 1:
         board = ExperimentGenerator()
@@ -493,8 +494,6 @@ while(choice <= 2):
 
 
                 saveData(filename,player1.getHypothesis())
-                data = getData(filename)
-                num = len(data)  
                 print(getHypo(data,num-1))
                 
                 
