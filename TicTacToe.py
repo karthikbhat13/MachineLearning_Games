@@ -10,11 +10,14 @@ class ExperimentGenerator:
     
     def __init__(self):
         self.board = self.generateBoard()
+        self.trace = self.generateTrace()
+        self.index = 0
         self.history = [copy.deepcopy(self.board)]
+        self.traceHistory = [copy.deepcopy(self.trace)]
 
     def setBoard(self,board):
         if board == 0:
-            print "zero board"
+            print("empty")
         self.board = board
         self.history.append(copy.deepcopy(self.board))
 
@@ -23,6 +26,21 @@ class ExperimentGenerator:
                   [0,0,0],
                   [0,0,0] ]
         return board
+    
+    def generateTrace(self):
+        board = [ [0,0,0],
+                  [0,0,0],
+                  [0,0,0] ]
+        return board
+    
+    def setTrace(self,trace):
+        if trace == 0:
+            print("empty")
+        self.trace = trace
+        self.traceHistory.append(copy.deepcopy(self.trace))
+
+    def getTrace(self):
+        return trace
 
     def getWinner(self, board = 0):
         if board == 0:
@@ -95,7 +113,7 @@ class ExperimentGenerator:
                 
         return done
 
-    def getFeatures(self, board = 0):
+    def getOldFeatures(self, board = 0):
         if board == 0:
             board = self.board
         #x1 = number of instances of 2 x's in a row with an open subsequent square
@@ -143,6 +161,135 @@ class ExperimentGenerator:
                 x6 += 1
 
         return x1,x2,x3,x4,x5,x6
+    
+
+    def getFeatures(self, board , trace):
+
+        possibilities = []
+        for row in self.getRows(board):
+            possibilities.append(row)
+        for column in self.getColumns(board):
+            possibilities.append(column)
+        for diagonal in self.getDiagonals(board):
+            possibilities.append(diagonal)
+
+
+        x1 = 0      
+        x2 = 0
+        x3 = 0
+        x4 = 0
+        x5 = 0
+        x6 = 0
+        x7 = 0      
+        x8 = 0
+        x9 = 0
+        x10 = 0
+        x11 = 0
+        x12 = 0
+        for possibility in possibilities:
+            zeros = 0
+            Xs = 0
+            Os = 0
+            for entry in possibility:
+                if entry == 0:
+                    zeros += 1
+                elif entry == 1:
+                    Xs += 1
+                elif entry == 2:
+                    Os += 1
+            if Xs == 3:
+                x1 += 1
+            elif Os == 3:
+                x2 += 1
+
+
+        x3 += self.getFork(self.getRows(board),self.getColumns(board),1) + self.getFork(self.getDiagonals(board),self.getColumns(board),1) + self.getFork(self.getRows(board),self.getDiagonals(board),1)  
+        x4 += self.getFork(self.getRows(board),self.getColumns(board),2) + self.getFork(self.getDiagonals(board),self.getColumns(board),2) + self.getFork(self.getRows(board),self.getDiagonals(board),2)
+        
+        if(board [1][1] == 1):
+            x5 += 1
+        elif(board [1][1] == 2):
+            x6 += 1
+        
+
+
+
+        if(board[0][1] == 1):
+            x7 += 1
+        elif(board[0][1] == 2):
+            x8 += 1
+        if(board[1][0] == 1):
+            x7 += 1
+        elif(board[1][0] == 2):
+            x8 += 1
+        if(board[1][2] == 1):
+            x7 += 1
+        elif(board[1][2] == 2):
+            x8 += 1
+        if(board[2][1] == 1):
+            x7 += 1
+        elif(board[2][1] == 2):
+            x8 += 1
+
+        
+        if(board[0][0] == 1 and board[2][2] == 2):
+            if(trace[0][0] > trace[2][2]):
+                x9 += 1
+            elif(trace[0][0] < trace[2][2]):
+                x10 += 1
+        elif(board[0][0] == 2 and board[2][2] == 1):
+            if(trace[0][0] < trace[2][2]):
+                x9 += 1
+            elif(trace[0][0] > trace[2][2]):
+                x10 += 1
+        if(board[0][2] == 1 and board[2][0] == 2):
+            if(trace[0][2] > trace[2][0]):
+                x9 += 1
+            elif(trace[0][2] < trace[2][0]):
+                x10 += 1
+        elif(board[0][2] == 2 and board[2][0] == 1):
+            if(trace[0][2] < trace[2][0]):
+                x9 += 1
+            elif(trace[0][2] > trace[2][0]):
+                x10 += 1
+                
+        
+        if((board[0][0] == 1 and board[2][2]== 0) or board[0][0] == 0 and board[2][2]== 1):
+            x11+=1
+
+        elif((board[0][0] == 2 and board[2][2]== 0) or board[0][0] == 0 and board[2][2]== 2):
+            x12+=1
+
+        return x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12    
+
+    def getFork(self,row1,row2,mode):
+        true1 = False
+        true2 = False
+        if(row1 == row2):
+            return 0
+        for row in row1:
+            freq = 0
+            for i in range(0,len(row)):
+                if row[i] == mode:
+                    freq+=1
+                    if(freq == 2):
+                        true1 = True
+                        break
+
+
+        for row in row2:
+            freq = 0
+            for i in range(0,len(row)):
+                if row[i] == mode:
+                    freq+=1
+                    if(freq == 2):
+                        true2 = True
+                        break
+        if(true1 & true2):
+            return 1
+        return 0
+        
+            
 
     def getRows(self, board = 0):
         if board == 0:
@@ -185,33 +332,57 @@ class ExperimentGenerator:
 
     def getSuccessorsX(self):
         successors = []
+        successors1 = []
         for y in range(0,3):
             for x in range(0,3):
                 if self.board[y][x] == 0:
                     successor = copy.deepcopy(self.board)
+                    successor1 = copy.deepcopy(self.trace)
                     successor[y][x] = 1
+                    successor1[y][x] = self.index+1
                     successors.append(successor)
-        return successors
+                    successors1.append(successor1)
+        return successors,successors1
 
     def getSuccessorsO(self):
         successors = []
+        successors1 = []
         for y in range(0,3):
             for x in range(0,3):
                 if self.board[y][x] == 0:
                     successor = copy.deepcopy(self.board)
+                    successor1 = copy.deepcopy(self.trace)
                     successor[y][x] = 2
+                    successor1[y][x] = self.index +1
                     successors.append(successor)
-        return successors
+                    successors1.append(successor1)
+        return successors,successors1
 
     def getHistory(self):
         return self.history
+    
+    def gettraceHistory(self):
+        return self.traceHistory
 
     def setX(self,x,y):
         self.board[y][x] = 1
+        self.trace[y][x] = self.index + 1
+        self.index += 1
         self.history.append(copy.deepcopy(self.board))
+        self.traceHistory.append(copy.deepcopy(self.trace))
 
     def setO(self,x,y):
         self.board[y][x] = 2
+
+
+    def compareBoard(self,board1,board2):
+        for i in range(0,3):
+            for j in range(0,3):
+                if(board1[i][j] != board2[i][j]):
+                    self.trace[i][j] = self.index + 1
+                    self.index += 1
+                    self.traceHistory.append(copy.deepcopy(self.trace))
+                    return 0
 
     def printBoard(self, board = 0):
         if board == 0:
@@ -243,17 +414,23 @@ class PerformanceSystem:
         self.hypothesis = hypothesis
         self.mode = mode
         self.history = []        
-        self.updateConstant = .1
+        self.updateConstant = .01
 
     def setUpdateConstant(self, constant):
         self.updateConstant = constant
+    
+    def setIndex(self,ind):
+        self.index = ind
+    
+    def getIndex(self,ind):
+        return self.index
 
-    def evaluateBoard(self,board):
-        x1,x2,x3,x4,x5,x6 = self.board.getFeatures(board)
+    def evaluateBoard(self,board,trace):
+        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 = self.board.getFeatures(board,trace)
 
-        w0,w1,w2,w3,w4,w5,w6 = self.hypothesis
+        w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12 = self.hypothesis
 
-        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6
+        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8 + w9*x9 + w10*x10 + w11*x11 + w12*x12
 
     def setBoard(self, board):
         self.board = board
@@ -266,39 +443,52 @@ class PerformanceSystem:
 
     def getHypothesis(self):
         return self.hypothesis
+    
+
+    
 
     def chooseRandom(self):
         if self.mode == 1:
-            successors = self.board.getSuccessorsX()
+            successors,successors1 = self.board.getSuccessorsX()
         else:
-            successors = self.board.getSuccessorsO()
+            successors,successors1 = self.board.getSuccessorsO()
             
-        randomBoard = successors[random.randint(0,len(successors)-1)]
-        self.board.setBoard(randomBoard)
+        temp = random.randint(0,len(successors)-1)
+        
+        #self.board.compareBoard(self.board.getRows(),randomBoard)
+        self.board.index += 1
+        self.board.setBoard(successors[temp])
+        self.board.setTrace(successors1[temp])
 
     def chooseMove(self):
         if self.mode == 1:
-            successors = self.board.getSuccessorsX()
+            successors,successors1 = self.board.getSuccessorsX()
         else:
-            successors = self.board.getSuccessorsO()
+            successors,successors1 = self.board.getSuccessorsO()
 
         bestSuccessor = successors[0]
-        bestValue = self.evaluateBoard(bestSuccessor)
+        bestSuccessor1 = successors1[0]
+        bestValue = self.evaluateBoard(bestSuccessor,bestSuccessor1)
 
-        for successor in successors:
-            value = self.evaluateBoard(successor)
+        for i in range(0,len(successors)):
+            value = self.evaluateBoard(successors[i],successors1[i])
             if value > bestValue:
                 bestValue = value
-                bestSuccessor = successor
+                bestSuccessor = successors[i]
+                bestSuccessor1 = successors1[i]
 
-        self.board.setBoard(bestSuccessor) 
+
+        #self.board.compareBoard(self.board.getRows(),bestSuccessor)
+        self.board.setBoard(bestSuccessor)
+        self.board.setTrace(bestSuccessor1)
+        self.board.index += 1 
 
 
-    def updateWeights(self,history,trainingExamples):
+    def updateWeights(self,history,traceHistory,trainingExamples):
         for i in range(0,len(history)):
-            w0,w1,w2,w3,w4,w5,w6 = self.hypothesis
-            vEst = self.evaluateBoard(history[i])
-            x1,x2,x3,x4,x5,x6 = trainingExamples[i][0]
+            w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12 = self.hypothesis
+            vEst = self.evaluateBoard(history[i],traceHistory[i])
+            x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 = trainingExamples[i][0]
             vTrain = trainingExamples[i][1]            
 
             w0 = w0 + self.updateConstant*(vTrain - vEst)
@@ -308,8 +498,17 @@ class PerformanceSystem:
             w4 = w4 + self.updateConstant*(vTrain - vEst)*x4
             w5 = w5 + self.updateConstant*(vTrain - vEst)*x5
             w6 = w6 + self.updateConstant*(vTrain - vEst)*x6
+            w7 = w7 + self.updateConstant*(vTrain - vEst)*x7
+            w8 = w8 + self.updateConstant*(vTrain - vEst)*x8
+            w9 = w9 + self.updateConstant*(vTrain - vEst)*x9
+            w10 = w10 + self.updateConstant*(vTrain - vEst)*x10
+            w11 = w11 + self.updateConstant*(vTrain - vEst)*x11
+            w12 = w12 + self.updateConstant*(vTrain - vEst)*x12
 
-            self.hypothesis = w0,w1,w2,w3,w4,w5,w6
+            self.hypothesis = w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12
+    
+    
+        
             
 
 class Critic:
@@ -318,12 +517,13 @@ class Critic:
         self.mode = mode
         self.checker = ExperimentGenerator()
         
-    def evaluateBoard(self,board):
-        x1,x2,x3,x4,x5,x6 = self.checker.getFeatures(board)
+    
+    def evaluateBoard(self,board,trace):
+        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 = self.checker.getFeatures(board,trace)
 
-        w0,w1,w2,w3,w4,w5,w6 = self.hypothesis
+        w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12 = self.hypothesis
 
-        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6
+        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8 + w9*x9 + w10*x10 + w11*x11 + w12*x12
 
     def setHypothesis(self,hypothesis):
         self.hypothesis = hypothesis
@@ -331,25 +531,25 @@ class Critic:
     def setMode(self,mode):
         self.mode = mode
 
-    def getTrainingExamples(self,history):
+    def getTrainingExamples(self,history,traceHistory):
         trainingExamples = []
 
         for i in range(0,len(history)):
             if(self.checker.isDone(history[i])):
                 if(self.checker.getWinner(history[i]) == self.mode):
-                    trainingExamples.append([self.checker.getFeatures(history[i]), 100])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), 100])
                 elif(self.checker.getWinner(history[i]) == 0):
-                    trainingExamples.append([self.checker.getFeatures(history[i]), 0])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), 0])
                 else:
-                    trainingExamples.append([self.checker.getFeatures(history[i]), -100])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), -100])
             else:
                 if i+2 >= len(history):
                     if(self.checker.getWinner(history[len(history)-1]) == 0):
-                        trainingExamples.append([self.checker.getFeatures(history[i]), 0])
+                        trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), 0])
                     else:
-                        trainingExamples.append([self.checker.getFeatures(history[i]), -100])
+                        trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), -100])
                 else:
-                    trainingExamples.append([self.checker.getFeatures(history[i]), self.evaluateBoard(history[i+2])])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), self.evaluateBoard(history[i+2],traceHistory[i+2])])
 
         return trainingExamples
 
@@ -383,7 +583,7 @@ def getHypo(lyst,num):
 filename = 'record.txt'   
 choice = 0
 if not getData(filename):
-    saveData(filename,(.5,.5,.5,.5,.5,.5,.5,))
+    saveData(filename,(.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5))
 
 
  
@@ -396,6 +596,7 @@ while(choice <= 2):
 
     if choice == 1:
         board = ExperimentGenerator()
+        trace = board.trace
         hypothesis1 = getHypo(data,num-1)
         hypothesis2 = getHypo(data,0)
         player1 = PerformanceSystem(board,hypothesis1,1)
@@ -411,8 +612,9 @@ while(choice <= 2):
 
         for i in range(0,10000):
             board = ExperimentGenerator()
+            trace = board.trace
             player1.setBoard(board)
-            player2.setBoard(board)            
+            player2.setBoard(board)     
             while(not board.isDone()):
                 #player1.chooseRandom()
                 player1.chooseMove()
@@ -421,6 +623,7 @@ while(choice <= 2):
                 #player2.chooseMove()
                 player2.chooseRandom()
         # board.printBoard()
+            #print(board.trace)
 
             winner = board.getWinner()
                 
@@ -436,9 +639,8 @@ while(choice <= 2):
 
             critic1.setHypothesis(player1.getHypothesis())
             critic2.setHypothesis(player2.getHypothesis())
-
-            player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
-            player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
+            player1.updateWeights(board.getHistory(),board.gettraceHistory(),critic1.getTrainingExamples(board.getHistory(),board.gettraceHistory()))
+            player2.updateWeights(board.getHistory(),board.gettraceHistory(),critic2.getTrainingExamples(board.getHistory(),board.gettraceHistory()))
 
         print "X won " + str(xwins) + " games."
         print "O won " + str(owins) + " games."
@@ -489,8 +691,8 @@ while(choice <= 2):
                 critic1.setHypothesis(player1.getHypothesis())
                 critic2.setHypothesis(player2.getHypothesis())
 
-                player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
-                player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
+                player1.updateWeights(board.getHistory(),board.gettraceHistory(),critic1.getTrainingExamples(board.getHistory(),board.gettraceHistory()))
+                player2.updateWeights(board.getHistory(),board.gettraceHistory(),critic2.getTrainingExamples(board.getHistory(),board.gettraceHistory()))
 
 
                 saveData(filename,player1.getHypothesis())
