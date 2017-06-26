@@ -201,36 +201,20 @@ class ExperimentGenerator:
                 x1 += 1
             elif Os == 3:
                 x2 += 1
+            if Xs == 2:
+                x7 += 1
+            elif Os == 2:
+                x8 += 1
 
 
-        x3 += self.getFork(self.getRows(board),self.getColumns(board),1) + self.getFork(self.getDiagonals(board),self.getColumns(board),1) + self.getFork(self.getRows(board),self.getDiagonals(board),1)  
-        x4 += self.getFork(self.getRows(board),self.getColumns(board),2) + self.getFork(self.getDiagonals(board),self.getColumns(board),2) + self.getFork(self.getRows(board),self.getDiagonals(board),2)
+        x3 = self.getFork(self.getRows(board),self.getColumns(board),1) or self.getFork(self.getDiagonals(board),self.getColumns(board),1) or self.getFork(self.getRows(board),self.getDiagonals(board),1)  
+        x4 = self.getFork(self.getRows(board),self.getColumns(board),2) or self.getFork(self.getDiagonals(board),self.getColumns(board),2) or self.getFork(self.getRows(board),self.getDiagonals(board),2)
         
         if(board [1][1] == 1):
             x5 += 1
         elif(board [1][1] == 2):
             x6 += 1
         
-
-
-
-        if(board[0][1] == 1):
-            x7 += 1
-        elif(board[0][1] == 2):
-            x8 += 1
-        if(board[1][0] == 1):
-            x7 += 1
-        elif(board[1][0] == 2):
-            x8 += 1
-        if(board[1][2] == 1):
-            x7 += 1
-        elif(board[1][2] == 2):
-            x8 += 1
-        if(board[2][1] == 1):
-            x7 += 1
-        elif(board[2][1] == 2):
-            x8 += 1
-
         
         if(board[0][0] == 1 and board[2][2] == 2):
             if(trace[0][0] > trace[2][2]):
@@ -253,14 +237,8 @@ class ExperimentGenerator:
             elif(trace[0][2] > trace[2][0]):
                 x10 += 1
                 
-        
-        if((board[0][0] == 1 and board[2][2]== 0) or board[0][0] == 0 and board[2][2]== 1):
-            x11+=1
 
-        elif((board[0][0] == 2 and board[2][2]== 0) or board[0][0] == 0 and board[2][2]== 2):
-            x12+=1
-
-        return x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12    
+        return x1, x2, x3, x4, x5, x6, x7, x8, x9, x10  
 
     def getFork(self,row1,row2,mode):
         true1 = False
@@ -269,22 +247,27 @@ class ExperimentGenerator:
             return 0
         for row in row1:
             freq = 0
+            freq0 = 0
             for i in range(0,len(row)):
                 if row[i] == mode:
                     freq+=1
-                    if(freq == 2):
-                        true1 = True
-                        break
+                elif row[i] == 0:
+                    freq0+=1
+            if(freq == 2 and freq0 == 1):
+                true1 = True
+                    
 
 
         for row in row2:
             freq = 0
+            freq0= 0
             for i in range(0,len(row)):
                 if row[i] == mode:
                     freq+=1
-                    if(freq == 2):
-                        true2 = True
-                        break
+                elif row[i] == 0:
+                    freq0+=1
+            if(freq == 2 and freq0 == 1):
+                true2 = True
         if(true1 & true2):
             return 1
         return 0
@@ -409,12 +392,12 @@ class ExperimentGenerator:
         print ""
 
 class PerformanceSystem:
-    def __init__(self,board,hypothesis,mode = 1):
+    def __init__(self,board,hypothesis,updateConstant,mode = 1):
         self.board = board
         self.hypothesis = hypothesis
         self.mode = mode
         self.history = []        
-        self.updateConstant = .01
+        self.updateConstant = updateConstant
 
     def setUpdateConstant(self, constant):
         self.updateConstant = constant
@@ -426,11 +409,11 @@ class PerformanceSystem:
         return self.index
 
     def evaluateBoard(self,board,trace):
-        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 = self.board.getFeatures(board,trace)
+        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10 = self.board.getFeatures(board,trace)
 
-        w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12 = self.hypothesis
+        w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10 = self.hypothesis
 
-        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8 + w9*x9 + w10*x10 + w11*x11 + w12*x12
+        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8 + w9*x9 + w10*x10
 
     def setBoard(self, board):
         self.board = board
@@ -486,9 +469,9 @@ class PerformanceSystem:
 
     def updateWeights(self,history,traceHistory,trainingExamples):
         for i in range(0,len(history)):
-            w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12 = self.hypothesis
+            w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10 = self.hypothesis
             vEst = self.evaluateBoard(history[i],traceHistory[i])
-            x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 = trainingExamples[i][0]
+            x1,x2,x3,x4,x5,x6,x7,x8,x9,x10 = trainingExamples[i][0]
             vTrain = trainingExamples[i][1]            
 
             w0 = w0 + self.updateConstant*(vTrain - vEst)
@@ -502,10 +485,8 @@ class PerformanceSystem:
             w8 = w8 + self.updateConstant*(vTrain - vEst)*x8
             w9 = w9 + self.updateConstant*(vTrain - vEst)*x9
             w10 = w10 + self.updateConstant*(vTrain - vEst)*x10
-            w11 = w11 + self.updateConstant*(vTrain - vEst)*x11
-            w12 = w12 + self.updateConstant*(vTrain - vEst)*x12
 
-            self.hypothesis = w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12
+            self.hypothesis = w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10
     
     
         
@@ -519,11 +500,11 @@ class Critic:
         
     
     def evaluateBoard(self,board,trace):
-        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 = self.checker.getFeatures(board,trace)
+        x1,x2,x3,x4,x5,x6,x7,x8,x9,x10 = self.checker.getFeatures(board,trace)
 
-        w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12 = self.hypothesis
+        w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10 = self.hypothesis
 
-        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8 + w9*x9 + w10*x10 + w11*x11 + w12*x12
+        return w0 + w1*x1 + w2*x2 + w3*x3 + w4*x4 + w5*x5 + w6*x6 + w7*x7 + w8*x8 + w9*x9 + w10*x10 
 
     def setHypothesis(self,hypothesis):
         self.hypothesis = hypothesis
@@ -583,32 +564,34 @@ def getHypo(lyst,num):
 filename = 'record.txt'   
 choice = 0
 if not getData(filename):
-    saveData(filename,(.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1,-1))
+    saveData(filename,(.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5))
 
 
  
 
 
 while(choice <= 2):
-    choice = int(input("enter the chioce"))
+    choice = int(input("enter the chhioce"))
     data = getData(filename)
-    num = len(data)  
+    num = len(data)
+    xwins = 0
+    owins = 0
+    draws = 0  
 
     if choice == 1:
+       # for k in range(10):
         board = ExperimentGenerator()
         trace = board.trace
-        hypothesis1 = getHypo(data,0)
+        hypothesis1 = getHypo(data,num-2)
         hypothesis2 = getHypo(data,num-1)
-        player1 = PerformanceSystem(board,hypothesis1,1)
-        player2 = PerformanceSystem(board,hypothesis2,2)
+        player1 = PerformanceSystem(board,hypothesis1,0.01,1)
+        player2 = PerformanceSystem(board,hypothesis2,0.01,2)
         player2.setUpdateConstant(.1)
         critic1 = Critic(hypothesis1,1)
         critic2 = Critic(hypothesis2,2)  
 
 
-        xwins = 0
-        owins = 0
-        draws = 0
+       
 
         for i in range(0,10000):
             board = ExperimentGenerator()
@@ -616,12 +599,17 @@ while(choice <= 2):
             player1.setBoard(board)
             player2.setBoard(board)     
             while(not board.isDone()):
-                #player1.chooseRandom()
-                player2.chooseRandom()
+
+                player1.chooseMove()
+
                 if board.isDone():
                     break
+
+                #player1.chooseRandom()
+                player2.chooseMove()
+                
                 #player2.chooseMove()
-                player1.chooseMove()
+                
                 
         # board.printBoard()
             #print(board.trace)
@@ -647,16 +635,16 @@ while(choice <= 2):
         print "O won " + str(owins) + " games."
         print "There were " + str(draws) + " draws."
         saveData(filename,player1.getHypothesis())
-        print(getHypo(data,num-1))
 
 
     elif(choice == 2):
-            hypothesis1 = getHypo(data,num-1)
+            board = ExperimentGenerator()
+            hypothesis1 = getHypo(data,0)
             hypothesis2 = getHypo(data,num-2)
-            player1 = PerformanceSystem(board,hypothesis1,1)
-        #player2 = PerformanceSystem(board,hypothesis2,2)
+            player1 = PerformanceSystem(board,hypothesis1,0.1,1)
+            player2 = PerformanceSystem(board,hypothesis2,0.1,2)
             while True:
-                board = ExperimentGenerator()
+                
                 player1.setBoard(board)
                 player2.setBoard(board)
 
@@ -707,5 +695,6 @@ while(choice <= 2):
 
                 saveData(filename,player1.getHypothesis())
                 print(getHypo(data,num-1))
+                break
                 
                 
