@@ -76,7 +76,7 @@ class ExperimentGenerator:
             return 0
 
         else:
-            print "Game not done, cannot determine winner"
+            print("Game not done, cannot determine winner")
 
     def isDone(self, board = 0):
         if board == 0:
@@ -583,7 +583,7 @@ def getHypo(lyst,num):
 filename = 'record.txt'   
 choice = 0
 if not getData(filename):
-    saveData(filename,(.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5))
+    saveData(filename,(.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1,-1))
 
 
  
@@ -597,8 +597,8 @@ while(choice <= 2):
     if choice == 1:
         board = ExperimentGenerator()
         trace = board.trace
-        hypothesis1 = getHypo(data,num-1)
-        hypothesis2 = getHypo(data,0)
+        hypothesis1 = getHypo(data,0)
+        hypothesis2 = getHypo(data,num-1)
         player1 = PerformanceSystem(board,hypothesis1,1)
         player2 = PerformanceSystem(board,hypothesis2,2)
         player2.setUpdateConstant(.1)
@@ -617,11 +617,12 @@ while(choice <= 2):
             player2.setBoard(board)     
             while(not board.isDone()):
                 #player1.chooseRandom()
-                player1.chooseMove()
+                player2.chooseRandom()
                 if board.isDone():
                     break
                 #player2.chooseMove()
-                player2.chooseRandom()
+                player1.chooseMove()
+                
         # board.printBoard()
             #print(board.trace)
 
@@ -650,6 +651,10 @@ while(choice <= 2):
 
 
     elif(choice == 2):
+            hypothesis1 = getHypo(data,num-1)
+            hypothesis2 = getHypo(data,num-2)
+            player1 = PerformanceSystem(board,hypothesis1,1)
+        #player2 = PerformanceSystem(board,hypothesis2,2)
             while True:
                 board = ExperimentGenerator()
                 player1.setBoard(board)
@@ -662,7 +667,11 @@ while(choice <= 2):
                     #board.setX(xval,yval)
 
                     #player1.chooseRandom()
+                       
+
+
                     player1.chooseMove()
+                   
                     if board.isDone():
                         break
 
@@ -670,7 +679,8 @@ while(choice <= 2):
                     xval = input("Enter xcoordinate: ")
                     yval = input("Enter ycoordinate: ")
                     board.setO(xval,yval)
-
+                    
+                 
 
                     #player2.chooseMove()
                     #player2.chooseRandom()
