@@ -173,6 +173,15 @@ class ExperimentGenerator:
         for diagonal in self.getDiagonals(board):
             possibilities.append(diagonal)
 
+        tracePos = []
+
+        for row in self.getRows(trace):
+            tracePos.append(row)
+        for column in self.getColumns(trace):
+            tracePos.append(column)
+        for diagonal in self.getDiagonals(trace):
+            tracePos.append(diagonal)
+
 
         x1 = 0      
         x2 = 0
@@ -186,11 +195,11 @@ class ExperimentGenerator:
         x10 = 0
         x11 = 0
         x12 = 0
-        for possibility in possibilities:
+        for i in range (0,len(possibilities)):
             zeros = 0
             Xs = 0
             Os = 0
-            for entry in possibility:
+            for entry in possibilities[i]:
                 if entry == 0:
                     zeros += 1
                 elif entry == 1:
@@ -202,9 +211,17 @@ class ExperimentGenerator:
             elif Os == 3:
                 x2 += 1
             if Xs == 2:
-                x7 += 1
-            elif Os == 2:
-                x8 += 1
+                if zeros == 1:
+                    x7+=1
+                elif(Os == 1 and possibilities[i][tracePos[i].index(max(tracePos[i]))] == 2):
+                    x9+=1
+            if Os == 2:
+                if zeros == 1:
+                    x8+=1
+                elif(Xs == 1 and possibilities[i][tracePos[i].index(max(tracePos[i]))] == 1):
+                    x10+=1
+
+
 
 
         x3 = self.getFork(self.getRows(board),self.getColumns(board),1) or self.getFork(self.getDiagonals(board),self.getColumns(board),1) or self.getFork(self.getRows(board),self.getDiagonals(board),1)  
@@ -215,7 +232,7 @@ class ExperimentGenerator:
         elif(board [1][1] == 2):
             x6 += 1
         
-        
+        """
         if(board[0][0] == 1 and board[2][2] == 2):
             if(trace[0][0] > trace[2][2]):
                 x9 += 1
@@ -236,7 +253,7 @@ class ExperimentGenerator:
                 x9 += 1
             elif(trace[0][2] > trace[2][0]):
                 x10 += 1
-                
+            """    
 
         return x1, x2, x3, x4, x5, x6, x7, x8, x9, x10  
 
@@ -518,19 +535,19 @@ class Critic:
         for i in range(0,len(history)):
             if(self.checker.isDone(history[i])):
                 if(self.checker.getWinner(history[i]) == self.mode):
-                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), 100])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), ((0.95**(len(history)-i))*100)])
                 elif(self.checker.getWinner(history[i]) == 0):
-                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), 0])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), ((0.95**(len(history)-i))*0)])
                 else:
-                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), -100])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), ((0.95**(len(history)-i))* -100)])
             else:
                 if i+2 >= len(history):
                     if(self.checker.getWinner(history[len(history)-1]) == 0):
-                        trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), 0])
+                        trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), ((0.95**(len(history)-i))*0)])
                     else:
-                        trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), -100])
+                        trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), ((0.95**(len(history)-i))* -100)])
                 else:
-                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), self.evaluateBoard(history[i+2],traceHistory[i+2])])
+                    trainingExamples.append([self.checker.getFeatures(history[i],traceHistory[i]), ((0.95**(len(history)-i)) * self.evaluateBoard(history[i+2],traceHistory[i+2]))])
 
         return trainingExamples
 
@@ -600,13 +617,15 @@ while(choice <= 2):
             player2.setBoard(board)     
             while(not board.isDone()):
 
+                if(i % 250 == 0):
+                    player1.chooseMove()
                 player1.chooseMove()
 
                 if board.isDone():
                     break
 
                 #player1.chooseRandom()
-                player2.chooseMove()
+                player2.chooseRandom()
                 
                 #player2.chooseMove()
                 
@@ -635,6 +654,7 @@ while(choice <= 2):
         print "O won " + str(owins) + " games."
         print "There were " + str(draws) + " draws."
         saveData(filename,player1.getHypothesis())
+        #saveData(filename,player2.getHypothesis())
 
 
     elif(choice == 2):
